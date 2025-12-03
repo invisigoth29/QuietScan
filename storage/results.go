@@ -2,54 +2,30 @@ package storage
 
 import (
     "encoding/json"
-    "time"
+    "os"
 
-    "quietscan/scanner"
+    "quietscan/types"
 )
 
-type DeviceEntry struct {
-    IP       string `json:"ip"`
-    MAC      string `json:"mac"`
-    Vendor   string `json:"vendor"`
-    Hostname string `json:"hostname"`
-}
-
-type ScanResult struct {
-    Timestamp time.Time     `json:"timestamp"`
-    Adapter   string        `json:"adapter"`
-    Subnet    string        `json:"subnet"`
-    Devices   []DeviceEntry `json:"devices"`
-}
-
-func NewScanResult(devs []DeviceEntry) *ScanResult {
-    adapter, subnet := scanner.GetActiveAdapter()
-    return &ScanResult{
-        Timestamp: time.Now(),
-        Adapter:   adapter,
-        Subnet:    subnet,
-        Devices:   devs,
-    }
-}
-
-func SaveScanResult(r *ScanResult) {
+func SaveScanResult(r *types.ScanResult) {
     FileLock.Lock()
     defer FileLock.Unlock()
 
     h := LoadHistory()
     if r != nil {
-        h = append([]ScanResult{*r}, h...)
+        h = append([]types.ScanResult{*r}, h...)
         if len(h) > 5 {
             h = h[:5]
         }
     } else {
-        h = []ScanResult{}
+        h = []types.ScanResult{}
     }
 
-    data, _ := json.MarshalIndent(map[string][]ScanResult{"history": h}, "", "  ")
+    data, _ := json.MarshalIndent(map[string][]types.ScanResult{"history": h}, "", "  ")
     os.WriteFile("results.json", data, 0644)
 }
 
-func LoadLatestResults() *ScanResult {
+func LoadLatestResults() *types.ScanResult {
     h := LoadHistory()
     if len(h) == 0 {
         return nil

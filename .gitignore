@@ -1,1 +1,4 @@
 .DS_Store
+# Vendored/untracked tooling caches
+vendor/golang.org/x/sys/unix/
+.gocache/
