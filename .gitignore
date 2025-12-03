@@ -2,3 +2,23 @@
 # Vendored/untracked tooling caches
 vendor/golang.org/x/sys/unix/
 .gocache/
+
+# Build artifacts
+QuietScan
+QuietScan-*
+dist/
+*.exe
+*.syso
+
+# Runtime files
+results.json
+
+# IDE files
+.cursor/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.log
