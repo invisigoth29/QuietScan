@@ -59,7 +59,7 @@ QuietScan uses a combination of:
 - **IEEE OUI database** for MAC vendor identification
 - **DNS reverse lookup** for hostname resolution
 
-The scanning process is designed to be slow and polite, avoiding rapid-fire pings that might trigger intrusion detection systems.
+The scanning process is designed to be polite,avoiding behavior that might trigger intrusion detection systems.
 
 ## Data Storage
 
