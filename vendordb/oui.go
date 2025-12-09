@@ -72,8 +72,15 @@ func FetchMasterOUI() (OUIDatabase, string, error) {
 		"https://raw.githubusercontent.com/wireshark/wireshark/master/manuf",
 	}
 
+	// SECURITY: Validate custom OUI URL from environment variable
 	if override := strings.TrimSpace(os.Getenv("QUIETSCAN_OUI_URL")); override != "" {
-		candidates = append([]string{override}, candidates...)
+		// Only allow HTTPS URLs to prevent SSRF and ensure encrypted transport
+		if strings.HasPrefix(override, "https://") {
+			candidates = append([]string{override}, candidates...)
+		} else {
+			fmt.Fprintf(os.Stderr, "WARNING: Custom OUI URL must use HTTPS for security. Ignoring: %s\n", override)
+			fmt.Fprintf(os.Stderr, "         Only HTTPS URLs are allowed to prevent security risks.\n")
+		}
 	}
 
 	client := &http.Client{Timeout: 20 * time.Second}

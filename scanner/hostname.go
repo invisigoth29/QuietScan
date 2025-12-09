@@ -10,6 +10,12 @@ import (
 )
 
 func ResolveHostname(ip string) string {
+	// SECURITY: Validate IP address before using in command to prevent command injection
+	if err := ValidateIP(ip); err != nil {
+		// Invalid IP address - return empty string
+		return ""
+	}
+
 	// Try reverse DNS lookup first with timeout
 	timeout := time.Duration(currentTimeoutMs) * time.Millisecond
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)

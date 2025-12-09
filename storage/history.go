@@ -8,8 +8,11 @@ import (
 )
 
 func LoadHistory() []types.ScanResult {
-    data, err := os.ReadFile("results.json")
+    // Use the secure results file path
+    resultsPath := getResultsFilePath()
+    data, err := os.ReadFile(resultsPath)
     if err != nil {
+        // File doesn't exist or can't be read - return empty history
         return nil
     }
     var out struct {

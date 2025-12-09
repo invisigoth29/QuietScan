@@ -138,6 +138,12 @@ func GetTimeoutMs() int {
 }
 
 func PingHost(ip string) bool {
+	// SECURITY: Validate IP address before using in command to prevent command injection
+	if err := ValidateIP(ip); err != nil {
+		// Invalid IP address - return false instead of attempting ping
+		return false
+	}
+
 	timeoutMs := currentTimeoutMs
 	// Clamp ping timeout to reasonable values (ping command has its own limits)
 	if timeoutMs > 5000 {
