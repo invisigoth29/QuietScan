@@ -6,6 +6,9 @@ echo "Building QuietScan for all platforms..."
 # Windows
 echo "Building Windows (with icon)..."
 
+# Clean old Windows resource files to ensure icon updates are picked up
+rm -f cmd/quietscan/rsrc_windows_*.syso
+
 # Generate Windows resources so Go embeds the icon
 go-winres simply --arch amd64 --icon assets/icon.ico --manifest gui --out cmd/quietscan/rsrc
 
