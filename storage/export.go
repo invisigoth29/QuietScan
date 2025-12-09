@@ -10,6 +10,13 @@ import (
 	"quietscan/types"
 )
 
+var allowOverwrite = false // Set via SetAllowOverwrite
+
+// SetAllowOverwrite sets whether existing files can be overwritten
+func SetAllowOverwrite(allow bool) {
+	allowOverwrite = allow
+}
+
 // ExportToCSV exports the scan result to a CSV file in the current working directory
 func ExportToCSV(result *types.ScanResult) (string, error) {
 	if result == nil || len(result.Devices) == 0 {
@@ -80,6 +87,16 @@ func ExportToCSVWithMetadata(result *types.ScanResult) (string, error) {
 	filename := fmt.Sprintf("quietscan-export-%s.csv", timestamp)
 	filepath := filepath.Join(cwd, filename)
 
+	// Validate file path before creating
+	if err := ValidateFilePath(filepath, allowOverwrite); err != nil {
+		return "", fmt.Errorf("cannot write to output path: %v", err)
+	}
+
+	// Check if file exists and log overwrite warning
+	if CheckFileExists(filepath) && allowOverwrite {
+		fmt.Fprintf(os.Stderr, "Warning: Overwriting existing file: %s\n", filepath)
+	}
+
 	// Create CSV file
 	file, err := os.Create(filepath)
 	if err != nil {
@@ -128,5 +145,3 @@ func ExportToCSVWithMetadata(result *types.ScanResult) (string, error) {
 
 	return filepath, nil
 }
-
-

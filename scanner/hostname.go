@@ -1,26 +1,43 @@
 package scanner
 
 import (
+	"context"
 	"net"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 func ResolveHostname(ip string) string {
-	// Try reverse DNS lookup first
-	ptr, err := net.LookupAddr(ip)
+	// Try reverse DNS lookup first with timeout
+	timeout := time.Duration(currentTimeoutMs) * time.Millisecond
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	r := &net.Resolver{}
+	ptr, err := r.LookupAddr(ctx, ip)
 	if err == nil && len(ptr) > 0 {
 		return strings.Trim(ptr[0], ".")
 	}
 
-	// On Windows, try nbtstat for NetBIOS names
+	// On Windows, try nbtstat for NetBIOS names with timeout
 	if runtime.GOOS == "windows" {
 		cmd := exec.Command("nbtstat", "-A", ip)
 		hideWindow(cmd)
-		out, _ := cmd.Output()
-		if name := parseNBTName(string(out)); name != "" {
-			return name
+
+		// Create context with timeout
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
+		defer cancel()
+
+		cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+		hideWindow(cmd)
+
+		out, err := cmd.Output()
+		if err == nil {
+			if name := parseNBTName(string(out)); name != "" {
+				return name
+			}
 		}
 	}
 

@@ -7,12 +7,16 @@ QuietScan is a lightweight, polite network discovery tool with a cross-platform 
 - **Polite Scanning**: Uses randomized delays (400-700ms) between pings to avoid triggering security alerts
 - **Cross-Platform**: Supports Windows, macOS (Intel & Apple Silicon), and Linux
 - **Modern GUI**: Built with Fyne framework for a native look and feel
+- **Adapter Selection**: Choose which network adapter to scan from via dropdown menu
+- **Flexible Subnet Configuration**: Manually specify subnet ranges using CIDR (192.168.1.0/24) or range notation (192.168.1.1-254)
+- **Real-time Search/Filter**: Instantly filter scan results by IP, MAC, Vendor, or Hostname
+- **Context Menu**: Right-click any table cell to copy its value to clipboard
 - **MAC Vendor Lookup**: Automatic vendor identification using IEEE OUI database
 - **Hostname Resolution**: Resolves device hostnames when available
 - **Scan History**: Keeps track of the last 5 scans for comparison
 - **CSV Export**: Export scan results with metadata to CSV files
 - **OUI Database Updates**: Update MAC vendor database directly from IEEE sources
-- **Progress Tracking**: Real-time progress bar during scans
+- **Progress Tracking**: Real-time progress bar during scans with remaining host count
 - **Self-Contained**: Bundled resources (icon, OUI database) for easy distribution
 
 ## Building
@@ -34,12 +38,18 @@ This will create executables for:
 
 ## Usage
 
-1. Launch QuietScan
-2. Click "Scan Now" to start a polite network scan
-3. View results in the table showing IP, MAC, Vendor, and Hostname
-4. Use "Show History" to view previous scans
-5. Export results to CSV via Tools → Export to CSV
-6. Update MAC vendor database via Tools → Update MAC Vendor Database
+1. **Launch QuietScan** - Start the application
+2. **Select Network Adapter** (optional) - Choose which adapter to scan from using the dropdown
+3. **Configure Subnet** (optional) - Manually enter a subnet range:
+   - CIDR notation: `192.168.1.0/24`
+   - Range notation: `192.168.1.1-254`
+   - Single IP: `192.168.1.100`
+4. **Scan Network** - Click "Scan Now" to start a polite network scan
+5. **Filter Results** - Use the search bar to filter by IP, MAC, Vendor, or Hostname
+6. **Copy Data** - Right-click any cell in the results table to copy its value
+7. **View History** - Click "Show History" to view previous scans
+8. **Export Results** - Use Tools → Export to CSV to save scan results
+9. **Update Database** - Use Tools → Update MAC Vendor Database to refresh the OUI database
 
 ## How It Works
 

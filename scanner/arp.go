@@ -1,15 +1,30 @@
 package scanner
 
 import (
+	"context"
 	"os/exec"
 	"runtime"
 	"strings"
+	"time"
 )
 
 func GetARPTable() map[string]string {
 	cmd := exec.Command("arp", "-a")
 	hideWindow(cmd)
-	out, _ := cmd.Output()
+
+	// Create context with timeout
+	timeout := time.Duration(currentTimeoutMs) * time.Millisecond
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	cmd = exec.CommandContext(ctx, cmd.Path, cmd.Args[1:]...)
+	hideWindow(cmd)
+
+	out, err := cmd.Output()
+	if err != nil {
+		// Timeout or error - return empty table
+		return make(map[string]string)
+	}
 	lines := strings.Split(string(out), "\n")
 
 	table := make(map[string]string)
