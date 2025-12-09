@@ -61,6 +61,36 @@ QuietScan uses a combination of:
 
 The scanning process is designed to be slow and polite, avoiding rapid-fire pings that might trigger intrusion detection systems.
 
+## Data Storage
+
+QuietScan stores scan history in OS-appropriate application data directories with secure permissions:
+
+### Storage Locations
+
+- **macOS**: `~/Library/Application Support/QuietScan/results.json`
+- **Linux**: `~/.config/QuietScan/results.json`
+- **Windows**: `%APPDATA%\QuietScan\results.json`
+
+### Security
+
+- Directory permissions: `0700` (owner read/write/execute only)
+- File permissions: `0600` (owner read/write only)
+- Scan history is private and not accessible to other users on shared systems
+
+### Migration from Previous Versions
+
+If you're upgrading from a previous version that stored `results.json` in the current working directory:
+
+1. Your old scan history will not be automatically migrated
+2. QuietScan will create a new history in the secure location
+3. To preserve old history, manually copy the old `results.json` to the new location:
+   ```bash
+   # macOS/Linux example
+   cp results.json ~/Library/Application\ Support/QuietScan/
+   # or
+   cp results.json ~/.config/QuietScan/
+   ```
+
 ## Requirements
 
 - Go 1.21 or later
