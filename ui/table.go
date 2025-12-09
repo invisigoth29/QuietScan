@@ -27,9 +27,68 @@ type tableWithContextMenu struct {
 	window fyne.Window
 }
 
+// tappableOverlay is an invisible overlay that captures secondary taps
+// but allows other interactions to pass through to the table below
+type tappableOverlay struct {
+	widget.BaseWidget
+	onSecondaryTap func(*fyne.PointEvent)
+}
+
+func (o *tappableOverlay) TappedSecondary(ev *fyne.PointEvent) {
+	if o.onSecondaryTap != nil {
+		o.onSecondaryTap(ev)
+	}
+}
+
+func (o *tappableOverlay) CreateRenderer() fyne.WidgetRenderer {
+	// Return an empty renderer - this widget is invisible
+	return widget.NewSimpleRenderer(container.NewMax())
+}
+
+func newTappableOverlay(onSecondaryTap func(*fyne.PointEvent)) *tappableOverlay {
+	overlay := &tappableOverlay{
+		onSecondaryTap: onSecondaryTap,
+	}
+	overlay.ExtendBaseWidget(overlay)
+	return overlay
+}
+
+// Custom renderer that layers the table with an overlay for tap capture
+type tableWithContextMenuRenderer struct {
+	wrapper *tableWithContextMenu
+	overlay *tappableOverlay
+	objects []fyne.CanvasObject
+}
+
+func (r *tableWithContextMenuRenderer) Layout(size fyne.Size) {
+	r.wrapper.table.Resize(size)
+	r.overlay.Resize(size)
+}
+
+func (r *tableWithContextMenuRenderer) MinSize() fyne.Size {
+	return r.wrapper.table.MinSize()
+}
+
+func (r *tableWithContextMenuRenderer) Refresh() {
+	r.wrapper.table.Refresh()
+}
+
+func (r *tableWithContextMenuRenderer) Objects() []fyne.CanvasObject {
+	return r.objects
+}
+
+func (r *tableWithContextMenuRenderer) Destroy() {}
+
 func (t *tableWithContextMenu) CreateRenderer() fyne.WidgetRenderer {
-	c := container.NewMax(t.table)
-	return widget.NewSimpleRenderer(c)
+	overlay := newTappableOverlay(func(ev *fyne.PointEvent) {
+		t.TappedSecondary(ev)
+	})
+
+	return &tableWithContextMenuRenderer{
+		wrapper: t,
+		overlay: overlay,
+		objects: []fyne.CanvasObject{t.table, overlay},
+	}
 }
 
 func (t *tableWithContextMenu) Refresh() {
