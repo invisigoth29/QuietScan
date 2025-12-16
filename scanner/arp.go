@@ -70,3 +70,21 @@ func GetARPTable() map[string]string {
 	}
 	return table
 }
+
+// GetARPTableActive performs active ARP scanning followed by passive fallback
+// Returns map[IP]MAC with MAC addresses for discovered hosts
+// This is the recommended function to use for accurate MAC address discovery
+func GetARPTableActive(ips []string) map[string]string {
+	// Try active ARP first
+	arpMap := ARPScanAll(ips)
+
+	// For any IPs without MAC, try passive ARP as fallback
+	passive := GetARPTable()
+	for ip, mac := range passive {
+		if _, exists := arpMap[ip]; !exists {
+			arpMap[ip] = mac
+		}
+	}
+
+	return arpMap
+}

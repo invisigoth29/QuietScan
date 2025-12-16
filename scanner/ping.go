@@ -307,7 +307,9 @@ func RunPoliteScanWithIPs(ips []string, adapter, subnet string, progressCallback
 		}
 	}
 
-	arp := GetARPTable()
+	// Active ARP-first scanning: send ARP to all IPs before pinging
+	// This ensures MAC addresses are discovered even on empty ARP cache
+	arp := GetARPTableActive(ips)
 	total := len(ips)
 
 	// Check for high-intensity scan settings and warn if needed
@@ -344,18 +346,27 @@ func RunPoliteScanWithIPs(ips []string, adapter, subnet string, progressCallback
 			// Always add small random jitter (50-150ms) to avoid synchronized bursts
 			time.Sleep(time.Duration(rand.Intn(100)+50) * time.Millisecond)
 
-			reachable := PingHost(targetIP)
-			if !reachable {
-				// Update progress even for unreachable hosts
-				current := atomic.AddInt64(&completed, 1)
-				if progressCallback != nil {
-					progressCallback(int(current), total)
-				}
-				return
-			}
-
-			// Get device information (ARP table is read-only, safe for concurrent reads)
+			// Check if we have MAC from active ARP scan
 			mac := arp[targetIP]
+
+			if mac == "" {
+				// No MAC from ARP - ping to verify reachability
+				reachable := PingHost(targetIP)
+				if !reachable {
+					// Update progress even for unreachable hosts
+					current := atomic.AddInt64(&completed, 1)
+					if progressCallback != nil {
+						progressCallback(int(current), total)
+					}
+					return
+				}
+				// After ping, check ARP cache again (ping may have populated it)
+				freshArp := GetARPTable()
+				mac = freshArp[targetIP]
+			}
+			// If we have MAC from ARP, host is considered reachable (ARP response = device is up)
+
+			// Get additional device information
 			vendor := LookupVendor(mac)
 			host := ResolveHostname(targetIP)
 
